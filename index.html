@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Organizer Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="dashboard" class="dashboard" aria-label="Desktop organizer dashboard">
+    <img class="wallpaper" src="background.png" alt="" />
+
+    <!-- Dynamic month calendar: covers the static Canva calendar content -->
+    <section class="widget calendar-widget" aria-label="Calendar">
+      <div class="calendar-top">
+        <div>
+          <div id="calendarMonth" class="month-title"></div>
+        </div>
+        <div class="clock-weather">
+          <div class="weather-main">
+            <img id="weatherIcon" class="weather-icon" src="icons/cloudy.svg" alt="" aria-hidden="true" />
+            <span id="weatherTemp" class="weather-temp">--°</span>
+          </div>
+          <div id="weatherCity" class="weather-city">Weather loading…</div>
+        </div>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </section>
+
+    <!-- Agenda -->
+    <section class="widget agenda-widget" aria-label="Agenda">
+      <div id="agendaList" class="agenda-list"></div>
+      <form id="agendaForm" class="add-row compact-form">
+        <input id="agendaDate" type="date" aria-label="Agenda date" required />
+        <input id="agendaText" type="text" maxlength="80" placeholder="Add an event…" aria-label="Agenda item" required />
+        <button type="submit" aria-label="Add agenda item">+</button>
+      </form>
+    </section>
+
+    <!-- To-do -->
+    <section class="widget todo-widget" aria-label="To-do list">
+      <div id="todoList" class="todo-list"></div>
+      <form id="todoForm" class="add-row">
+        <input id="todoText" type="text" maxlength="80" placeholder="Add a task…" aria-label="New task" required />
+        <button type="submit" aria-label="Add task">+</button>
+      </form>
+    </section>
+
+    <!-- Quick notepad in the former quote area -->
+    <section class="widget notes-widget" aria-label="Quick notepad">
+      <textarea id="quickNotes" spellcheck="true" placeholder="Notes"></textarea>
+      <div class="notes-footer">
+        <span id="saveStatus">Saved locally</span>
+        <button id="clearNotes" type="button">Clear</button>
+      </div>
+    </section>
+
+    <!-- Apps panel intentionally left blank for future application icons -->
+    <section class="widget apps-reserved" aria-label="Reserved apps area"></section>
+
+    <!-- Small settings button -->
+    <button id="settingsButton" class="settings-button" type="button" aria-label="Weather settings">⚙</button>
+
+    <dialog id="settingsDialog">
+      <form method="dialog" id="settingsForm">
+        <h2>Dashboard settings</h2>
+        <label>
+          Weather location
+          <input id="weatherLocation" type="text" placeholder="e.g. Clermont-Ferrand" />
+        </label>
+        <label>
+          Temperature unit
+          <select id="temperatureUnit">
+            <option value="celsius">°C</option>
+            <option value="fahrenheit">°F</option>
+          </select>
+        </label>
+        <div class="dialog-actions">
+          <button value="cancel" type="button" id="cancelSettings">Cancel</button>
+          <button value="save" type="submit">Save</button>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

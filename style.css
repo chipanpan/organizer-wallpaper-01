@@ -1,0 +1,618 @@
+@import url("https://fonts.googleapis.com/css2?family=Parisienne&display=swap");
+@font-face {
+  font-family: "Halimun";
+  src: url("./fonts/Halimun.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --ink: #5a2b17;
+  --accent: #a84b16;
+  --soft-accent: #d9c4b1;
+  --paper: rgba(251, 249, 244, 0.96);
+  --paper-warm: rgba(251, 248, 238, 0.96);
+  --line: rgba(126, 83, 57, 0.42);
+  --muted: #9b765f;
+  --font-body: "Segoe UI", "Trebuchet MS", sans-serif;
+  --font-digit: "Birthday", "Inter", "Segoe UI", sans-serif;
+  --font-script: "Halimun", "Segoe Script", "Bradley Hand", cursive;
+  --font-handwritten: "Deuxieme Rang", "Trebuchet MS", sans-serif;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #e7dfd4;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+.dashboard {
+  position: relative;
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: min(100vh, calc(100vw * 9 / 16));
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  user-select: none;
+}
+
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.widget {
+  position: absolute;
+  min-width: 0;
+}
+
+/* Covers the static calendar text while keeping the decorative background. */
+.calendar-widget {
+  left: 7.3%;
+  top: 8.0%;
+  width: 26.2%;
+  height: 43.0%;
+  padding: 1.1% 1.4% .8%;
+  background:
+    linear-gradient(rgba(247,243,235,.80), rgba(247,243,235,.80));
+  border-radius: 1.2%;
+}
+
+.calendar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2%;
+  height: 32%;
+}
+
+.month-title {
+  font-family: var(--font-script);
+  font-size: clamp(25px, 1vw, 60px);
+  line-height: 1;
+  color: #9c4c19;
+  padding-top: 10%;
+}
+
+.clock-weather {
+  min-width: 42%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1%;
+  color: var(--ink);
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  line-height: 1;
+}
+
+.weather-icon {
+  display: block;
+  width: clamp(36px, 3.1vw, 60px);
+  height: clamp(36px, 3.1vw, 60px);
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.weather-temp {
+  font-family: var(--font-digit);
+  font-size: clamp(22px, 2.25vw, 42px);
+  color: #8b664c;
+  font-weight: 500;
+  letter-spacing: -.03em;
+  white-space: nowrap;
+}
+
+.weather-city {
+  width: 100%;
+  margin-top: .001 rem;
+  text-align: center;
+  font-size: clamp(9px, 1vw, 15px);
+  line-height: 1.15;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-grid {
+  display: grid;
+  padding-top: 0%;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.7% 1.2%;
+  align-items: center;
+  text-align: center;
+  height: 62%;
+  font-size: clamp(9px, 1.1vw, 17px);
+  font-weight: 600;
+}
+
+.calendar-cell {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  line-height: 1;
+}
+
+.calendar-day {
+  width: 1.72em;
+  height: 1.72em;
+  aspect-ratio: 1 / 1;
+  justify-self: center;
+  align-self: center;
+  border-radius: 50%;
+}
+
+.calendar-head {
+  aspect-ratio: auto;
+  font-weight: 700;
+  padding-bottom: .65em;
+}
+
+.calendar-head.weekend,
+.calendar-day.weekend {
+  color: #c05020;
+}
+
+.calendar-day.today {
+  background: #d8c6b5;
+  color: #7b2b08;
+}
+
+.calendar-day.agenda-selected {
+  background: #f0cfb0d3;
+}
+
+.calendar-day.other-month {
+  opacity: .22;
+}
+
+/* Agenda paper interior */
+.agenda-widget {
+  left: 36.8%;
+  top: 17.2%;
+  width: 26.3%;
+  height: 27.2%;
+  padding: .35% 1.5% .7%;
+  background: rgba(250,248,244,.93);
+}
+
+.agenda-list {
+  height: 82%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  pointer-events: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  padding-right: .35rem;
+}
+
+.agenda-item {
+  display: grid;
+  grid-template-columns: 1.35rem 1fr auto;
+  align-items: center;
+  gap: .38rem;
+  min-height: 1.55rem;
+  line-height: 1.05;
+  font-size: clamp(9px, 1vw, 16px);
+}
+
+.agenda-badge {
+  width: 1.18rem;
+  height: 1.18rem;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #decebf;
+  color: #8b664c;
+  font-size: .65rem;
+  line-height: 1;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.agenda-badge.agenda-today {
+  background: #b96f3f;
+  color: #fffaf5;
+  font-weight: 700;
+}
+
+.agenda-item button:not(.agenda-badge),
+.todo-item button {
+  border: 0;
+  background: transparent;
+  color: #b08b74;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.agenda-item:hover button:not(.agenda-badge),
+.todo-item:hover button,
+.agenda-item button:not(.agenda-badge):focus,
+.todo-item button:focus {
+  opacity: 1;
+}
+
+/* Todo paper interior */
+.todo-widget {
+  left: 66.8%;
+  top: 17.0%;
+  width: 22.8%;
+  height: 27.5%;
+  padding: .35% 1.0% .7%;
+  background: rgba(250,248,244,.93);
+}
+
+.todo-list {
+  height: 82%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  pointer-events: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: 1.35rem 1fr auto;
+  align-items: center;
+  gap: .38rem;
+  min-height: 1.55rem;
+  line-height: 1.05;
+  border-bottom: 1px dotted var(--line);
+  font-size: clamp(9px, 1vw, 16px);
+}
+
+.todo-check {
+  appearance: none;
+  width: 1.18rem;
+  height: 1.18rem;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #decebf;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+
+.todo-check:checked::after {
+  content: "✓";
+  font-weight: 900;
+  color: #7a3c1c;
+  font-size: .75rem;
+}
+
+.todo-text.done {
+  text-decoration: line-through;
+  opacity: .55;
+}
+
+/* Shared add row */
+.add-row {
+  display: flex;
+  gap: .35rem;
+  margin-top: .45rem;
+}
+
+.add-row input,
+.add-row button,
+.dialog-actions button,
+.settings-button,
+.notes-footer button,
+dialog input,
+dialog select {
+  font: inherit;
+}
+
+.add-row input {
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+  padding: .28rem .2rem;
+  font-size: .8em;
+}
+
+.add-row input:focus {
+  border-bottom-color: var(--accent);
+}
+
+.add-row input[type="text"] {
+  flex: 1;
+}
+
+.compact-form input[type="date"] {
+  width: 7.4rem;
+  font-size: .8em;
+}
+
+.add-row button {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0;
+  border-radius: 50%;
+  background: #decdbc;
+  color: var(--ink);
+  cursor: pointer;
+  transform: translateY(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Quick notepad on the lower-left grid-paper area */
+.notes-widget {
+  left: 7.3%;
+  top: 53.0%;
+  width: 28.4%;
+  height: 33.0%;
+  padding: 1.1% 1.2% .55%;
+  background: rgba(250,247,242,.42);
+}
+
+.notes-widget textarea {
+  width: 100%;
+  height: 92%;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #8d4b28;
+  font-family: var(--font-handwritten);
+  font-size: clamp(13px, 1.35vw, 26px);
+  line-height: 1.35;
+  padding: .2rem .35rem;
+  overflow-y: auto;
+  pointer-events: auto;
+  text-align: justify;
+}
+
+.notes-widget textarea::placeholder {
+  color: #8d4b28;
+  font-family: var(--font-script);
+  font-size: 1.2em;
+  opacity: 1;
+}
+
+.notes-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: clamp(8px, .62vw, 12px);
+}
+
+.notes-footer button {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.apps-reserved {
+  left: 37.0%;
+  top: 52.4%;
+  width: 41.8%;
+  height: 24.3%;
+  pointer-events: none;
+  background: transparent;
+}
+
+
+
+
+
+/* =========================================================
+   LIVELY INTERACTION IMPROVEMENTS
+   ========================================================= */
+
+.agenda-widget,
+.todo-widget,
+.notes-widget {
+  overflow: visible;
+}
+
+.agenda-list,
+.todo-list,
+.notes-widget textarea {
+  scrollbar-width: none;
+}
+
+.agenda-list::-webkit-scrollbar,
+.todo-list::-webkit-scrollbar,
+.notes-widget textarea::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.custom-scrollbar {
+  position: absolute;
+  right: .35rem;
+  width: 10px;
+  z-index: 20;
+  border-radius: 999px;
+  background: rgba(126, 83, 57, .04);
+  opacity: 0;
+  transition:
+    opacity .15s ease,
+    background .15s ease;
+  pointer-events: auto;
+}
+
+.todo-widget .custom-scrollbar {
+  right: .15rem;
+}
+
+.notes-widget .custom-scrollbar {
+  right: .35rem;
+}
+
+.custom-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 6px;
+  min-height: 22px;
+  border-radius: 999px;
+  background: rgba(139, 102, 76, .28);
+  cursor: grab;
+  transition:
+    background .15s ease,
+    width .15s ease,
+    left .15s ease;
+}
+
+.custom-scrollbar:hover {
+  opacity: 1;
+  background: rgba(126, 83, 57, .06);
+}
+
+.custom-scrollbar:hover .custom-scrollbar-thumb {
+  left: 1px;
+  width: 8px;
+  background: rgba(139, 102, 76, .42);
+}
+
+.custom-scrollbar-thumb:hover {
+  background: rgba(139, 102, 76, .50);
+}
+
+.custom-scrollbar-thumb.dragging {
+  cursor: grabbing;
+  background: rgba(139, 102, 76, .58);
+}
+
+.custom-scrollbar.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.agenda-list.drag-scroll-enabled,
+.todo-list.drag-scroll-enabled {
+  cursor: grab;
+}
+
+.agenda-list.drag-scroll-enabled.is-dragging,
+.todo-list.drag-scroll-enabled.is-dragging {
+  cursor: grabbing;
+}
+
+.agenda-list button,
+.todo-list button,
+.todo-list input {
+  cursor: pointer;
+}
+
+
+/* tiny settings control */
+.settings-button {
+  position: absolute;
+  right: 1.4%;
+  bottom: 1.7%;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid rgba(120,80,50,.25);
+  background: rgba(250,248,243,.75);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+dialog {
+  width: min(420px, 88vw);
+  border: 1px solid #d8c7ba;
+  border-radius: 14px;
+  padding: 1.2rem;
+  color: var(--ink);
+  background: #fbf8f2;
+}
+
+dialog::backdrop {
+  background: rgba(35,24,18,.30);
+}
+
+dialog form {
+  display: grid;
+  gap: 1rem;
+}
+
+dialog h2 {
+  margin: 0 0 .25rem;
+}
+
+dialog label {
+  display: grid;
+  gap: .35rem;
+}
+
+dialog input,
+dialog select {
+  padding: .6rem .7rem;
+  border: 1px solid #d8c7ba;
+  border-radius: 8px;
+  background: white;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .5rem;
+}
+
+.dialog-actions button {
+  padding: .55rem .8rem;
+  border-radius: 8px;
+  border: 1px solid #d1beb0;
+  background: white;
+  cursor: pointer;
+}
+
+.dialog-actions button[value="save"] {
+  background: #ead9c9;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(151,111,82,.28);
+  border-radius: 20px;
+}
+
+@media (max-aspect-ratio: 4/3) {
+  .weather-city {
+    display: none;
+  }
+}
