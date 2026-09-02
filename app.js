@@ -48,6 +48,12 @@
   // Currently selected agenda date in YYYY-MM-DD format.
   let selectedAgendaDate = null;
 
+  // Last successfully fetched weather, kept only in memory.
+  let lastWeather = null;
+
+  // One-minute retry timer after a failed weather refresh.
+  let weatherRetryTimer = null;
+
   const $ = (id) => document.getElementById(id);
 
   function localDateKey(date = new Date()) {
@@ -334,9 +340,18 @@
     const tempEl = $("weatherTemp");
     const cityEl = $("weatherCity");
 
-    iconEl.src = "icons/cloudy.svg";
-    tempEl.textContent = "--°";
-    cityEl.textContent = "Weather loading…";
+    /*
+      On initial startup there is no previous successful weather yet,
+      so show the normal loading state.
+
+      On later refreshes, keep the currently displayed weather visible
+      while the new request is being fetched.
+    */
+    if (!lastWeather) {
+      iconEl.src = "icons/cloudy.svg";
+      tempEl.textContent = "--°";
+      cityEl.textContent = "Weather loading…";
+    }
 
     try {
       const place = await geocodeLocation(settings.weatherLocation);
@@ -349,22 +364,77 @@
       url.searchParams.set("timezone", "auto");
 
       const response = await fetch(url);
-      if (!response.ok) throw new Error("Weather request failed");
+
+      if (!response.ok) {
+        throw new Error(`Weather request failed: ${response.status}`);
+      }
 
       const data = await response.json();
+
       const temp = Math.round(data.current.temperature_2m);
-      const unit = settings.temperatureUnit === "fahrenheit" ? "°F" : "°C";
+      const unit =
+        settings.temperatureUnit === "fahrenheit"
+          ? "°F"
+          : "°C";
+
       const weatherCode = data.current.weather_code;
       const isDay = data.current.is_day;
 
-      iconEl.src = weatherCodeToIcon(weatherCode, isDay);
-      tempEl.textContent = `${temp}${unit}`;
-      cityEl.textContent = place.name;
+      /*
+        Save only successful weather in memory.
+        It is deliberately not written to localStorage.
+      */
+      lastWeather = {
+        icon: weatherCodeToIcon(weatherCode, isDay),
+        temp: `${temp}${unit}`,
+        city: place.name
+      };
+
+      iconEl.src = lastWeather.icon;
+      tempEl.textContent = lastWeather.temp;
+      cityEl.textContent = lastWeather.city;
+
+      /*
+        A successful request ends any retry chain.
+      */
+      if (weatherRetryTimer) {
+        clearTimeout(weatherRetryTimer);
+        weatherRetryTimer = null;
+      }
+
     } catch (err) {
-      iconEl.src = "icons/cloudy.svg";
-      tempEl.textContent = "--°";
-      cityEl.textContent = "Weather unavailable";
-      console.error(err);
+      console.warn(
+        "Weather refresh failed. Keeping latest successful weather and retrying in 1 minute.",
+        err
+      );
+
+      /*
+        Keep the latest successful weather visible if one exists.
+      */
+      if (lastWeather) {
+        iconEl.src = lastWeather.icon;
+        tempEl.textContent = lastWeather.temp;
+        cityEl.textContent = lastWeather.city;
+      } else {
+        /*
+          Only show unavailable when the very first request fails
+          and there is no previous successful weather to show.
+        */
+        iconEl.src = "icons/cloudy.svg";
+        tempEl.textContent = "--°";
+        cityEl.textContent = "Weather unavailable";
+      }
+
+      /*
+        Retry after one minute. Only one retry timer is allowed
+        at a time, so failures cannot create overlapping retry chains.
+      */
+      if (!weatherRetryTimer) {
+        weatherRetryTimer = setTimeout(() => {
+          weatherRetryTimer = null;
+          updateWeather();
+        }, 60_000);
+      }
     }
   }
 
