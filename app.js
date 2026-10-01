@@ -7,6 +7,9 @@
     settings: "organizer.settings.v1"
   };
 
+  const AGENDA_DB = "organizer-storage";
+  const AGENDA_STORE = "agenda";
+
   const defaultTodos = [
     { id: crypto.randomUUID(), text: "Thesis Defense", done: false },
     { id: crypto.randomUUID(), text: "Practice French", done: false },
@@ -38,8 +41,77 @@
 
   const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 
+  function openAgendaStore() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) {
+        reject(new Error("IndexedDB is unavailable"));
+        return;
+      }
+
+      const request = indexedDB.open(AGENDA_DB, 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore(AGENDA_STORE, { keyPath: "id" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function loadAgenda() {
+    try {
+      const database = await openAgendaStore();
+      const stored = await new Promise((resolve, reject) => {
+        const request = database
+          .transaction(AGENDA_STORE, "readonly")
+          .objectStore(AGENDA_STORE)
+          .get("current");
+        request.onsuccess = () => resolve(request.result?.value);
+        request.onerror = () => reject(request.error);
+      });
+      database.close();
+
+      if (stored) return stored;
+
+      const migrated = load(STORAGE.agenda, defaultAgenda);
+      await saveAgendaToDatabase(migrated);
+      return migrated;
+    } catch {
+      return load(STORAGE.agenda, defaultAgenda);
+    }
+  }
+
+  async function saveAgendaToDatabase(value) {
+    const database = await openAgendaStore();
+    await new Promise((resolve, reject) => {
+      const request = database
+        .transaction(AGENDA_STORE, "readwrite")
+        .objectStore(AGENDA_STORE)
+        .put({ id: "current", value });
+      request.onsuccess = resolve;
+      request.onerror = () => reject(request.error);
+    });
+    database.close();
+  }
+
+  let agendaSaveChain = Promise.resolve();
+  function saveAgenda(value) {
+    agendaSaveChain = agendaSaveChain
+      .catch(() => {})
+      .then(async () => {
+        try {
+          await saveAgendaToDatabase(value);
+        } catch {
+        }
+        try {
+          save(STORAGE.agenda, value);
+        } catch {
+        }
+      });
+    return agendaSaveChain;
+  }
+
   let todos = load(STORAGE.todos, defaultTodos);
-  let agenda = load(STORAGE.agenda, defaultAgenda);
+  let agenda = [];
   let settings = load(STORAGE.settings, {
     weatherLocation: "Clermont-Ferrand",
     temperatureUnit: "celsius"
@@ -224,7 +296,7 @@
         remove.setAttribute("aria-label", `Delete ${item.text}`);
         remove.addEventListener("click", () => {
           agenda = agenda.filter(a => a.id !== item.id);
-          save(STORAGE.agenda, agenda);
+          saveAgenda(agenda);
           renderAgenda();
         });
 
@@ -252,7 +324,7 @@
       const text = $("agendaText").value.trim();
       if (!date || !text) return;
       agenda.push({ id: crypto.randomUUID(), date, text });
-      save(STORAGE.agenda, agenda);
+      saveAgenda(agenda);
       $("agendaText").value = "";
       renderAgenda();
     });
@@ -723,7 +795,8 @@
     if (todoList) enableDragScrolling(todoList);
   }
 
-  function init() {
+  async function init() {
+    agenda = await loadAgenda();
     renderCalendar();
     renderTodos();
     renderAgenda();
